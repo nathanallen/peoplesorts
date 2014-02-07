@@ -1,16 +1,22 @@
 class Main
-  attr_reader :people
 
   def initialize(files)
-    @people = build_people(files)
+    build_people(files)
+  end
+
+  def display_recordsets(output=[])
+    output << ViewController.render("Output 1", Person.by_gender)
+    output << ViewController.render("Output 2", Person.by_birth)
+    output << ViewController.render("Output 3", Person.by_last_name_descending)
+    output.flatten.join('')
   end
 
   private
 
   def build_people(files)
     rows = load_and_parse(files)
-    rows = format(rows)
-    rows.map do |row|
+    formatted_rows = reformat(rows)
+    formatted_rows.map do |row|
       Person.new(*row)
     end
   end
@@ -21,7 +27,7 @@ class Main
     end.flatten(1)
   end
 
-  def format(rows)
+  def reformat(rows)
     mmddyyyy = /(?<mm>\d{1,2}) (\-|\/) (?<dd>\d{1,2}) (\-|\/) (?<yyyy>\d{4})/x
     rows.map do |row|
       row[-1] =~ mmddyyyy ? row << row.slice!(-2) : row
@@ -30,12 +36,20 @@ class Main
 end
 
 class ViewController
-  def self.render(title,objects)
-    print title + "\n"
-    objects.each do |obj|
-      obj.inspect
-    end
-    print "\n"
+  def self.render(*args)
+    rendered_records = build_records(*args).join('')
+    print rendered_records
+    return rendered_records
+  end
+
+  private
+
+  def self.build_records(title,objects,output=[])
+    output << title + ":\r\n"
+    output << objects.map do |obj|
+                obj.inspect + "\r\n"
+              end
+    output << "\r\n"
   end
 end
 
@@ -73,12 +87,12 @@ end
 
 class PeopleSearch
 
-  def self.by_gender #(females before males) then by last name ascending (a-z).
+  def self.by_gender
     groupings = by_last_name.group_by{|person| person.gender }
     [*groupings['Female'],*groupings['Male']]
   end
 
-  def self.by_birth # - Output 2 – sorted by birth date, ascending (lo-hi).
+  def self.by_birth
     all.sort_by{|person| person.standardized_dob}
   end
 
@@ -86,7 +100,7 @@ class PeopleSearch
     all.sort_by{|person| person.last_name}
   end
 
-  def self.by_last_name_descending # by last name, descending z-a.
+  def self.by_last_name_descending
     by_last_name.reverse
   end
 
@@ -104,10 +118,6 @@ class People < PeopleSearch
     @@people
   end
 
-  # def people
-  #   @people ||= []
-  # end
-
   private
 
   def add_person
@@ -120,10 +130,10 @@ class Person < People
   attr_reader :last_name, :first_name, :middle_initial, :gender, :date_of_birth, :favorite_color, :standardized_dob
   require 'date'
 
-  def initialize(last_name, first_name, *opt, gender, date_of_birth, favorite_color)
+  def initialize(last_name, first_name, *middle, gender, date_of_birth, favorite_color)
     @last_name = last_name
     @first_name = first_name
-    @middle_initial = opt[0] || nil
+    @middle_initial = middle[0] || nil
     @gender = gender
     @date_of_birth = date_of_birth
     @favorite_color = favorite_color
@@ -131,16 +141,13 @@ class Person < People
     super
   end
 
-  def inspect
-    output = []
+  def inspect(output=[])
     output << self.last_name
     output << self.first_name
-    output << self.middle_initial if self.middle_initial
     output << self.gender
     output << self.date_of_birth
     output << self.favorite_color
-    output << "\n"
-    print output.join(' ')
+    output.join(' ')
   end
 
   private
