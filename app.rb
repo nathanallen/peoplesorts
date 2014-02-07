@@ -1,8 +1,7 @@
 require './controllers/main'
 require './controllers/viewController'
 require './models/DSV'
-require './models/peopleSearch'
-require './models/peopleDirectory'
+require './models/peopleFinder'
 require './models/person'
 
 # Driver Code

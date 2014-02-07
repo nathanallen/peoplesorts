@@ -1,4 +1,4 @@
-class Person < PeopleDirectory
+class Person < PeopleFinder
   require 'date'
 
   attr_reader :last_name, :first_name, :middle_initial, :gender, :date_of_birth, :favorite_color, :standardized_dob
