@@ -9,6 +9,7 @@ class Main
 
   def build_people(files)
     rows = load_and_parse(files)
+    rows = format(rows)
     rows.map do |row|
       Person.new(*row)
     end
@@ -19,15 +20,22 @@ class Main
       DSV.parse(file)
     end.flatten(1)
   end
+
+  def format(rows)
+    mmddyyyy = /(?<mm>\d{1,2}) (\-|\/) (?<dd>\d{1,2}) (\-|\/) (?<yyyy>\d{4})/x
+    rows.map do |row|
+      row[-1] =~ mmddyyyy ? row << row.slice!(-2) : row
+    end
+  end
 end
 
 class ViewController
   def self.render(title,objects)
-    p title
+    print title + "\n"
     objects.each do |obj|
       obj.inspect
     end
-    p ""
+    print "\n"
   end
 end
 
@@ -66,11 +74,12 @@ end
 class PeopleSearch
 
   def self.by_gender #(females before males) then by last name ascending (a-z).
-    by_last_name.sort_by{|person| person.gender}
+    groupings = by_last_name.group_by{|person| person.gender }
+    [*groupings['Female'],*groupings['Male']]
   end
 
   def self.by_birth # - Output 2 – sorted by birth date, ascending (lo-hi).
-    all.sort_by{|person| person.date_of_birth}
+    all.sort_by{|person| person.standardized_dob}
   end
 
   def self.by_last_name
@@ -108,15 +117,17 @@ class People < PeopleSearch
 end
 
 class Person < People
-  attr_reader :last_name, :first_name, :middle_initial, :gender, :date_of_birth, :favorite_color
-  
+  attr_reader :last_name, :first_name, :middle_initial, :gender, :date_of_birth, :favorite_color, :standardized_dob
+  require 'date'
+
   def initialize(last_name, first_name, *opt, gender, date_of_birth, favorite_color)
     @last_name = last_name
     @first_name = first_name
     @middle_initial = opt[0] || nil
-    @gender = standardize_gender(gender)
+    @gender = gender
     @date_of_birth = date_of_birth
     @favorite_color = favorite_color
+    normalize
     super
   end
 
@@ -128,15 +139,20 @@ class Person < People
     output << self.gender
     output << self.date_of_birth
     output << self.favorite_color
-    p output.join(' ')
+    output << "\n"
+    print output.join(' ')
   end
 
   private
 
-  def standardize_gender(gender)
-    return "Male" if gender == "M"
-    return "Female" if gender == "F"
-    return gender
+  def normalize
+    gender = @gender
+    @gender = "Male" if gender == "M"
+    @gender = "Female" if gender == "F"
+
+    @date_of_birth.gsub!('-','/')
+    
+    @standardized_dob = DateTime.strptime(@date_of_birth, '%m/%d/%Y').strftime('%Y/%m/%d')
   end
 
 end
