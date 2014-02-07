@@ -25,7 +25,7 @@ class ViewController
   def self.render(title,objects)
     p title
     objects.each do |obj|
-      p "#{obj.last_name} #{obj.first_name} #{obj.middle_initial} #{obj.gender} #{obj.date_of_birth} #{obj.favorite_color}"
+      obj.inspect
     end
     p ""
   end
@@ -108,23 +108,34 @@ class People < PeopleSearch
 end
 
 class Person < People
-  attr_accessor :last_name, :first_name, :middle_initial, :gender, :date_of_birth, :favorite_color
+  attr_reader :last_name, :first_name, :middle_initial, :gender, :date_of_birth, :favorite_color
   
-  def initialize(*args)
-    @last_name = args[0]
-    @first_name = args[1]
-    @middle_initial = args[2]
-    @gender = standardize_gender(args[3])
-    @date_of_birth = args[4]
-    @favorite_color = args[5]
+  def initialize(last_name, first_name, *opt, gender, date_of_birth, favorite_color)
+    @last_name = last_name
+    @first_name = first_name
+    @middle_initial = opt[0] || nil
+    @gender = standardize_gender(gender)
+    @date_of_birth = date_of_birth
+    @favorite_color = favorite_color
     super
+  end
+
+  def inspect
+    output = []
+    output << self.last_name
+    output << self.first_name
+    output << self.middle_initial if self.middle_initial
+    output << self.gender
+    output << self.date_of_birth
+    output << self.favorite_color
+    p output.join(' ')
   end
 
   private
 
   def standardize_gender(gender)
     return "Male" if gender == "M"
-    return "FEMALE" if gender == "F"
+    return "Female" if gender == "F"
     return gender
   end
 
