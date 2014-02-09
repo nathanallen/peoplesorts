@@ -1,17 +1,20 @@
 class Person < PeopleFinder
   require 'date'
 
-  attr_reader :last_name, :first_name, :middle_initial, :gender, :date_of_birth, :favorite_color, :standardized_dob
+  attr_reader :last_name, :first_name, :middle_initial, :gender, :favorite_color, :standardized_dob
 
   def initialize(last_name, first_name, *middle, gender, date_of_birth, favorite_color)
     @last_name = last_name
     @first_name = first_name
     @middle_initial = middle[0] || nil
-    @gender = gender
-    @date_of_birth = date_of_birth
+    @gender = normalize_gender(gender)
+    @date_of_birth = normalize_dob(date_of_birth)
     @favorite_color = favorite_color
-    normalize
     super
+  end
+
+  def date_of_birth(date_format="%-m/%-d/%Y")
+    @date_of_birth.strftime(date_format)
   end
 
   def inspect
@@ -26,14 +29,14 @@ class Person < PeopleFinder
 
   private
 
-  def normalize
-    gender = @gender
-    @gender = "Male" if gender == "M"
-    @gender = "Female" if gender == "F"
+  def normalize_gender(gender)
+    return "Male" if gender == "M"
+    return "Female" if gender == "F"
+    return gender
+  end
 
-    @date_of_birth.gsub!('-','/')
-    
-    @standardized_dob = DateTime.strptime(@date_of_birth, '%m/%d/%Y').strftime('%Y/%m/%d')
+  def normalize_dob(date_of_birth)\
+    DateTime.strptime(date_of_birth.gsub('-','/'), '%m/%d/%Y')
   end
 
 end
