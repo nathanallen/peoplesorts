@@ -14,7 +14,8 @@ class Person < PeopleFinder
     super
   end
 
-  def inspect(output=[])
+  def inspect
+    output = []
     output << self.last_name
     output << self.first_name
     output << self.gender

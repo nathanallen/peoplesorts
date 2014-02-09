@@ -4,11 +4,8 @@ class Main
     build_people(files)
   end
 
-  def display_recordsets(output=[])
-    output << ViewController.render("Output 1", Person.sort_by_gender)
-    output << ViewController.render("Output 2", Person.sort_by_birth)
-    output << ViewController.render("Output 3", Person.sort_by_last_name_descending)
-    output.flatten.join('')
+  def output_recordsets(*sorts_array)
+    ViewController.render_multiple(sorts_array)
   end
 
   private

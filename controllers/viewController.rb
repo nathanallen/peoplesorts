@@ -1,19 +1,18 @@
 class ViewController
 
-  def self.render(*args)
-    rendered_records = build_records(*args).join('')
-    print rendered_records
-    return rendered_records
+  def self.render(objects)
+    objects.map do |obj|
+      obj.inspect
+    end.join("\r\n")
   end
 
-  private
-
-  def self.build_records(title,objects,output=[])
-    output << title + ":\r\n"
-    output << objects.map do |obj|
-                obj.inspect + "\r\n"
-              end
-    output << "\r\n"
+  def self.render_multiple(sorts_array,output=[])
+    sorts_array.each_with_index do |sorted_objects, i|
+      output << "Output #{i+1}:"
+      output << render(sorted_objects)
+      output << "" # carriage return between recordsets
+    end
+    output.join("\r\n") + "\r\n" #trailing carraige return
   end
   
 end
