@@ -1,11 +1,14 @@
-class DSV #delimeter seperated values
+class DSV #delimiter seperated values
 
-  def self.parse(filepath)
-    input = read_file(filepath)
-    parse_rows_and_values(input)
+  def self.open(filepath)
+    input = File.read(filepath)
+    rows = input.split(/^/)
+    rows.map do |row|
+      yield(parse(row))
+    end
   end
 
-  def self.regex
+  def self.delimiter_regex
     %r{
       \,\s     # comma
       |        # or
@@ -17,15 +20,7 @@ class DSV #delimeter seperated values
 
   private
 
-  def self.read_file(filepath)
-    File.read(filepath)
+  def self.parse(row)
+    row.chomp.split(delimiter_regex)
   end
-
-  def self.parse_rows_and_values(input)
-    rows = input.split(/^/)
-    rows.map do |row|
-      row.chomp.split(regex)
-    end
-  end
-
 end

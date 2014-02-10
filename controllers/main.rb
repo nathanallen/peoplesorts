@@ -11,24 +11,15 @@ class Main
   private
 
   def build_people(files)
-    rows = load_and_parse(files)
-    formatted_rows = reformat(rows)
-    formatted_rows.map do |row|
-      Person.new(*row)
-    end
-  end
-
-  def load_and_parse(files)
+    mmddyyyy = /\d{1,2} (\-|\/) \d{1,2} (\-|\/) \d{4}/x
+    
     files.map do |file|
-      DSV.parse(file)
-    end.flatten(1)
-  end
-
-  def reformat(rows)
-    mmddyyyy = /(?<mm>\d{1,2}) (\-|\/) (?<dd>\d{1,2}) (\-|\/) (?<yyyy>\d{4})/x
-    rows.map do |row|
-      row[-1] =~ mmddyyyy ? row << row.slice!(-2) : row
+      DSV.open(file) do |row|
+        row[-1] =~ mmddyyyy ? row << row.slice!(-2) : row
+        Person.new(*row)
+      end
     end
+
   end
   
 end
